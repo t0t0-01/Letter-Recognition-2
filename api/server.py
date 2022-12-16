@@ -7,8 +7,6 @@ from PIL import Image
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-#from main import predict_letter_from_image
-#from main import load_model
 from pre_processing import get_bounding_box
 import tensorflow as tf
 
@@ -16,12 +14,15 @@ classes = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D',
 
 
 def load_cnn():
-    new_model = tf.keras.models.load_model('../models/cnn_model')
+    new_model = tf.keras.models.load_model(r'C:\Users\Anton\Desktop\Project 2\models\cnn_model')
     return new_model
 
+def load_arabic():
+    new_model = tf.keras.models.load_model(r"C:\Users\Anton\Desktop\Project 2\models\arabic_model")
+    return new_model
 
-def predict_letters_from_image(base64, model):
-    bounded, letters = get_bounding_box("./temp", "letter.png")
+def predict_letters_from_image(base64, model, img_size=28):
+    bounded, letters = get_bounding_box("./temp", "letter.png", img_size=img_size)
     processed = []
     for letter in letters:
         temp = letter[np.newaxis, :, :, np.newaxis]
@@ -35,7 +36,7 @@ def predict_letters_from_image(base64, model):
 
 model_english = load_cnn()
 ###########################
-model_arabic = ""
+model_arabic = load_arabic()
 
 app = Flask(__name__)
 
@@ -73,12 +74,13 @@ def upload():
             cv2.imwrite("./temp/letter.png", img)
             if language == 0:
                 bounded, word = predict_letters_from_image(string, model_english)
-                plt.imshow(bounded)
-                plt.show()
+
             else:
-                print("Arabic")
-                #y = predict_letter_from_image(model_arabic)
-            #return str(y[0])
+                bounded, word = predict_letters_from_image(string, model_arabic, 32)
+
+            
+            plt.imshow(bounded)
+            plt.show()
             return word
         
         return ""
